@@ -2,13 +2,27 @@ import streamlit as st
 import joblib
 import numpy as np
 import pandas as pd
+import os
 
-# Load the saved model
+# Path to the model
 model_path = 'best_gbm_model.pkl'
-model = joblib.load(model_path)
+
+# Check if the model file exists
+if os.path.exists(model_path):
+    try:
+        # Load the saved model
+        model = joblib.load(model_path)
+    except Exception as e:
+        st.error(f"Error loading the model: {e}")
+else:
+    st.error(f"Model file not found: {model_path}")
 
 # Load the feature names used in the model
-feature_names = X.columns
+feature_names = [
+    'age', 'weight', 'bmi', 'no_of_dependents', 'smoker', 'bloodpressure', 
+    'diabetes', 'regular_ex'
+    # Add all other features used during training
+]
 
 # Title of the app
 st.title("Medical Insurance Claim Prediction")
@@ -47,16 +61,19 @@ def get_user_input():
 
     return input_data[feature_names]
 
-# Get user input
-user_input = get_user_input()
+if 'model' in globals():
+    # Get user input
+    user_input = get_user_input()
 
-# Display user input
-st.subheader("User Input Features")
-st.write(user_input)
+    # Display user input
+    st.subheader("User Input Features")
+    st.write(user_input)
 
-# Predict using the model
-prediction = model.predict(user_input)
+    # Predict using the model
+    prediction = model.predict(user_input)
 
-# Display the prediction
-st.subheader("Predicted Claim Amount")
-st.write(f"${prediction[0]:.2f}")
+    # Display the prediction
+    st.subheader("Predicted Claim Amount")
+    st.write(f"${prediction[0]:.2f}")
+else:
+    st.error("Model is not loaded, cannot make predictions.")
